@@ -1,53 +1,46 @@
-
-
 function appView() {
-    let view = '';
+    let contentHtml = ''; // Endret navn for klarhet
     if(model.app.activeTab === '') {
         model.app.activeTab = model.app.tabs.recipes;
     }
 
     switch(model.app.activeTab) {
         case model.app.tabs.recipes:
-            view = recipeView();
+            contentHtml = recipeView(); // Får nå HTML fra recipeView
             break;
         case model.app.tabs.addRecipe:
-            view = addRecipeView();
+            contentHtml = addRecipeView(); // Får HTML fra addRecipeView
             break;
     }
 
-    document.getElementById('app').innerHTML = /*HTML*/ 
-        <div>
-            <header>
-            <h1>Onkel Dags oppskrifter</h1>        
-        </header>    
-        <input type="text" id="searchInput" placeholder="Søk etter oppskrift..." />
-        <button id="addRecipeButton" onclick="setActiveTab(model.app.tabs.addRecipe)">Legg til oppskrift</button>
-        <button id="clearRecipesButton" onclick="appController.clearRecipes()">Slett alle oppskrifter</button>
-        <button id="saveRecipesButton" onclick="appController.saveRecipes()">Lagre oppskrifter</button>
-        <button id="loadRecipesButton" onclick="appController.loadRecipes()">Last opp oppskrifter</button>
-        <button id="exportRecipesButton" onclick="appController.exportRecipes()">Eksporter oppskrifter</button>
-        <button id="importRecipesButton" onclick="appController.importRecipes()">Importer oppskrifter</button>
-        <button id="printRecipesButton" onclick="appController.printRecipes()">Skriv ut oppskrifter</button>
-        <button id="shareRecipesButton" onclick="appController.shareRecipes()">Del oppskrifter</button>
+    // Generer HTML for fane-knappene
+    let tabsHtml = '';
+    for (const tabKey in model.app.tabs) {
+        const tabName = model.app.tabs[tabKey];
+        const isActive = model.app.activeTab === tabName ? 'active' : ''; // Klasse for aktiv fane
+        const tabText = tabName === model.app.tabs.recipes ? 'Vis Oppskrifter' : 'Legg til Oppskrift'; // Tekst for knappen
+        tabsHtml += `<button class="${isActive}" onclick="setActiveTab('${tabName}')">${tabText}</button>`;
+    }
+
+    document.getElementById('app').innerHTML = /*HTML*/`
+        <header>
+          <h1>Onkel Dags oppskrifter</h1>        
+        </header>
+
+        <div class="search">
+            <input type="text" id="search" placeholder="Søk oppskrifter..." oninput="handleSearchInput(event)" value="${model.app.searchTerm || ''}">
+        </div>
+
         <div class="tabs">
-        <div class="tabs">
-            <div class="tab ${model.app.activeTab === model.app.tabs.recipes ? 'active' : ''}" onclick="setActiveTab(model.app.tabs.recipes)">Oppskrifter</div>
-            <div class="tab ${model.app.activeTab === model.app.tabs.addRecipe ? 'active' : ''}" onclick="setActiveTab(model.app.tabs.addRecipe)">Legg til ny oppskrift</div>
+            ${tabsHtml} <!-- Sett inn fane-knappene her -->
         </div>
-        
-        <div class="content">
-            ${view}
-        </div>
-        </div>
-        </div>
-    ;
+
+        <main class="content-area"> <!-- Container for hovedinnholdet -->
+            ${contentHtml} <!-- Sett inn HTML for den aktive visningen her -->
+        </main>
+    `;
 }
 
 function updateView() {
     appView();
-}     
-    document.getElementById("searchInput").addEventListener("input", (event) => {
-        const searchQuery = event.target.value;
-        const filteredRecipes = appController.searchRecipes(searchQuery);
-        updateRecipeList(filteredRecipes); // Oppdater visningen
-    });
+}
